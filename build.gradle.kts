@@ -13,7 +13,7 @@ val downloadArtifact: Configuration by configurations.creating {
     isTransitive = false
 }
 
-
+val javaVersion: String by project
 val identityHubVersion: String by project
 val registrationServiceVersion: String by project
 
@@ -44,8 +44,8 @@ allprojects {
 
     tasks.withType<JavaCompile> {
         options.encoding = "UTF-8"
-        sourceCompatibility = JavaVersion.VERSION_17.toString()
-        targetCompatibility = JavaVersion.VERSION_17.toString()
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 
     tasks.getByName<Test>("test") {
@@ -63,16 +63,31 @@ allprojects {
     }
 
     repositories {
+        val gitHubUserName: String? by project
+        val gitHubUserPassword: String? by project
         mavenCentral()
-        mavenLocal()
         maven {
-            name = "Github-EDC-Extensions"
-            url = uri("https://maven.pkg.github.com/sovity/edc-extensions")
+            url = uri("https://maven.pkg.github.com/ids-basecamp/ids-infomodel-java")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                username = gitHubUserName
+                password = gitHubUserPassword
             }
         }
+        maven {
+            url = uri("https://maven.pkg.github.com/ids-basecamp/gradle-plugins-fork")
+            credentials {
+                username = gitHubUserName
+                password = gitHubUserPassword
+            }
+        }
+        maven {
+            url = uri("https://maven.pkg.github.com/ids-basecamp/edc-fork")
+            credentials {
+                username = gitHubUserName
+                password = gitHubUserPassword
+            }
+        }
+        mavenLocal()
     }
 }
 
@@ -80,16 +95,19 @@ subprojects {
     apply(plugin = "maven-publish")
 
     val sovityEdcExtensionsVersion: String by project
+    val publishUserName: String? by project
+    val publishUserPassword: String? by project
+
     version = sovityEdcExtensionsVersion
 
     publishing {
         repositories {
             maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/sovity/edc-extensions")
+                name = "GitHub"
+                url = uri("https://maven.pkg.github.com/ids-basecamp/edc-extensions-fork")
                 credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                    username = publishUserName
+                    password = publishUserPassword
                 }
             }
         }
